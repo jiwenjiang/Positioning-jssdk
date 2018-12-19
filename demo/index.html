@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Title</title>
+  <!-- 引入js文件 -->
+  <script src="./mapbox-gl.js"></script>
+  <!--<script src="../lib/wb-positioning-jssdk.js"></script>-->
+</head>
+<body>
+<div id="map" style='width: 1440px; height: 800px;'></div>
+<div style="margin-top: 50px">
+  <button onclick="startDrawLine()">开始画线</button>
+  <button onclick="finishDrawLine()">结束画线</button>
+</div>
+<script type="module">
+  import loc from "./wb-positioning-jssdk.min";
+
+  console.log(loc);
+
+  var vectorMap = new creeper.VectorMap("map", 2, "https://map.parkbobo.com/");
+
+  var geoJson = {
+    "type": "FeatureCollection",
+    "features": [{
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [],
+        "type": "LineString"
+      }
+    }]
+  };
+
+  var onClick = function (e) {
+    var lngLat = e.lngLat;
+
+    geoJson.features[0].geometry.coordinates.push(lngLat.toArray());
+    console.log(geoJson);
+
+    vectorMap.getSource("lineSource").setData(geoJson);
+  };
+
+  vectorMap.on("load", function () {
+    vectorMap.addSource("lineSource", {
+      type: "geojson",
+      data: geoJson
+    });
+    vectorMap.addLayer({
+      type: "line",
+      source: "lineSource",
+      id: "lineLayer",
+      paint: {
+        "line-color": "red",
+        "line-width": 3
+      },
+      layout: {
+        "line-cap": "round",
+        "line-join": "round"
+      }
+    });
+  });
+
+  function startDrawLine() {
+    geoJson.features[0].geometry.coordinates = [];
+
+    vectorMap.on("click", onClick);
+  }
+
+  function finishDrawLine() {
+    geoJson.features[0].geometry.coordinates = [];
+    vectorMap.getSource("lineSource").setData(geoJson);
+
+    vectorMap.off("click", onClick);
+  }
+</script>
+</body>
+</html>

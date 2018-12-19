@@ -23,6 +23,8 @@ class Loc {
     ibeaconCoords = null;
     gpsCoords = null;
     locType = [];
+    currentPosition = null;
+    currentLocation = "gps";
 
 
     init({
@@ -34,17 +36,18 @@ class Loc {
              error = () => {
              }
          }) {
+        console.log("开始定位");
         this.mapId = mapId;
         this.timeout = timeout; // 超时时间
         this.locType = locType; // 定位类型
         this.initComplete = complete; // 初始化成功函数
         this.initError = error; // 初始化失败函数
-        locType && locType.includes("gps") && this.checkGPS();
+        // locType && locType.includes("gps") && this.checkGPS();
         locType && locType.includes("ibeacon") && this.getSignature();
     }
 
     initSuccess() {
-        if (!(this.locType.includes("ibeacon") && !this.initIbeacon || this.locType.includes("gps") && !this.initGps)) {
+        if (this.locType.includes("ibeacon") && this.initIbeacon) {
             this.initComplete();
         }
     }
@@ -95,14 +98,16 @@ class Loc {
 
     onSuccessGps(data) {
         this.gpsCoords = data;
-        if (!this.initIbeacon || this.currentLocation !== "ibeacon") {
+        if (this.currentLocation !== "ibeacon") {
             this.onLocationComplete(this.gpsCoords);
+            this.currentPosition = data;
         }
     }
 
     onSuccessIbeacon(data) {
         this.ibeaconCoords = data;
-        this.onLocationComplete(this.ibeaconCoords);
+        this.currentPosition = data;
+        this.onLocationComplete(this.ibeaconCoords, this);
     }
 }
 

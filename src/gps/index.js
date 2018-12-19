@@ -20,15 +20,16 @@ const gpsFn = (target) => {
         }
 
         geo_success = (res) => {
-            this.startSuccess({code: 1, msg: "gps定位启动"});
             const data = res.coords;
             const gpsObj = {
                 isOutdoor: 1,
                 longitude: data.longitude,
                 latitude: data.latitude,
                 accuracy: data.accuracy,
+                level: "0",
                 locType: "gps",
-                timestamp: res.timestamp
+                timestamp: res.timestamp,
+                // timer: new Date().getTime(),
             };
             this.onSuccessGps(gpsObj);
         };
@@ -38,14 +39,16 @@ const gpsFn = (target) => {
         }
 
         startGpsSearch() {
-            console.log("jinru gps");
+            console.log("进入gps");
+            this.startSuccess({code: 1, msg: "gps定位启动"});
             gps.gpsWatchId = navigator.geolocation.watchPosition(this.geo_success, gps.geo_error, {
-                enableHighAccuracy: true
+                enableHighAccuracy: true,
+                timeout: this.timeout
             });
         }
 
         stopGpsSearch() {
-            console.log("qingchu");
+            console.log("停止gps");
             navigator.geolocation.clearWatch(gps.gpsWatchId);
             this.stopLocationComplete({code: 1, msg: "gps定位停止"});
         }
